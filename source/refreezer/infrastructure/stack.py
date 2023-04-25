@@ -156,7 +156,7 @@ class RefreezerStack(Stack):
             "AsyncFacilitator",
             handler="refreezer.application.handlers.async_facilitator_handler",
             code=lambda_.Code.from_asset("source"),
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             memory_size=256,
         )
 
@@ -470,7 +470,7 @@ class RefreezerStack(Stack):
             self,
             "InventoryChunkDetermination",
             handler="refreezer.application.handlers.inventory_chunk_lambda_handler",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             code=lambda_.Code.from_asset("source"),
             description="Lambda to generate the correct byte offsets to retrieve the inventory.",
         )
@@ -566,7 +566,7 @@ class RefreezerStack(Stack):
             self,
             "InventoryChunkDownload",
             handler="refreezer.application.handlers.inventory_chunk_download_lambda_handler",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             code=lambda_.Code.from_asset("source"),
             description="Lambda to download inventory chunks from Glacier.",
         )
@@ -635,7 +635,7 @@ class RefreezerStack(Stack):
             self,
             "InventoryValidateMultipartUpload",
             handler="refreezer.application.handlers.validate_multipart_inventory_upload",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             code=lambda_.Code.from_asset("source"),
             description="Lambda to close the multipart inventory upload.",
         )
@@ -852,7 +852,7 @@ class RefreezerStack(Stack):
             self,
             "ArchiveChunkDetermination",
             handler="refreezer.application.handlers.archive_chunk_determination_lambda_handler",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             code=lambda_.Code.from_asset("source"),
             description="Lambda to generate the correct byte offsets to retrieve the archive.",
         )
@@ -885,22 +885,12 @@ class RefreezerStack(Stack):
             ],
         )
 
-        boto3_lambda_layer = lambda_.LayerVersion(
-            self,
-            "boto3_lambda_layer",
-            code=lambda_.Code.from_asset("layers/boto3.zip"),
-            compatible_runtimes=[lambda_.Runtime.PYTHON_3_9],
-            license="Apache-2.0",
-            description="A Boto3 layer to use (v1.26.70) rather than the default provided by lambda",
-        )
-
         chunk_retrieval_lambda = lambda_.Function(
             self,
             "ChunkRetrieval",
             handler="refreezer.application.handlers.chunk_retrieval_lambda_handler",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             code=lambda_.Code.from_asset("source"),
-            layers=[boto3_lambda_layer],
             memory_size=1536,
             timeout=Duration.minutes(15),
             description="Lambda to retrieve chunks from Glacier, upload them to S3 and generate file checksums.",
@@ -974,9 +964,8 @@ class RefreezerStack(Stack):
             self,
             "ChunkValidation",
             handler="refreezer.application.handlers.chunk_validation_lambda_handler",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             code=lambda_.Code.from_asset("source"),
-            layers=[boto3_lambda_layer],
             memory_size=128,
             timeout=Duration.minutes(3),
             description="Lambda to validate retrieved chunks and complete the S3 multipart upload.",
@@ -1199,5 +1188,15 @@ class RefreezerStack(Stack):
                     "id": "AwsSolutions-SF2",
                     "reason": "Step Function X-Ray tracing is disabled and will be addressed later.",
                 },
+            ],
+        )
+
+        NagSuppressions.add_stack_suppressions(
+            self,
+            [
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": "Python 3.10 is the latest version, but there is a bug in cdk-nag due to sorting",
+                }
             ],
         )

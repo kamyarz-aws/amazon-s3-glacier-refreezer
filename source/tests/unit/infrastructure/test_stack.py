@@ -467,7 +467,7 @@ def test_chunk_retrieval_lambda_created(
         props={
             "Properties": {
                 "Handler": "refreezer.application.handlers.chunk_retrieval_lambda_handler",
-                "Runtime": "python3.9",
+                "Runtime": "python3.10",
                 "MemorySize": 1536,
                 "Timeout": 900,
             },
@@ -493,7 +493,7 @@ def test_chunk_validation_lambda_created(
         props={
             "Properties": {
                 "Handler": "refreezer.application.handlers.chunk_validation_lambda_handler",
-                "Runtime": "python3.9",
+                "Runtime": "python3.10",
                 "MemorySize": 128,
                 "Timeout": 180,
             },
@@ -519,7 +519,7 @@ def test_inventory_chunk_determination_created(
         props={
             "Properties": {
                 "Handler": "refreezer.application.handlers.inventory_chunk_lambda_handler",
-                "Runtime": "python3.9",
+                "Runtime": "python3.10",
             },
         },
     )
@@ -550,7 +550,7 @@ def test_facilitator_lambda_created(
             },
             "Handler": "refreezer.application.handlers.async_facilitator_handler",
             "MemorySize": 256,
-            "Runtime": "python3.9",
+            "Runtime": "python3.10",
         },
     )
 

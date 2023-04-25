@@ -52,7 +52,7 @@ class PipelineStack(Stack):
             synth=self.get_synth_step(),
             code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    build_image=codebuild.LinuxBuildImage.STANDARD_6_0,
+                    build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
                     compute_type=codebuild.ComputeType.LARGE,
                 )
             ),
