@@ -3,6 +3,7 @@ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 """
 
+import functools
 import re
 from typing import Any
 
@@ -20,6 +21,7 @@ from refreezer.mocking.mock_glacier_stack import MockGlacierStack
 DEPLOY_STAGE_NAME = "test"
 REFREEZER_STACK_NAME = "refreezer"
 MOCK_GLACIER_STACK_NAME = "mock-glacier"
+RESOURCE_NAME_LENGTH_LIMIT = 30
 
 
 class PipelineStack(Stack):
@@ -76,7 +78,12 @@ class PipelineStack(Stack):
         """
         Returns a name with the repo and branch appended to differentiate pipelines between branches
         """
-        return "-".join(re.sub(r"\W+", "", part) for part in (name, "grf", self.branch))
+        concatenated = re.sub(r"[^a-zA-Z0-9-]+", "", f"{name}-grf-{self.branch}")
+        checksum = functools.reduce(
+            lambda a, b: a ^ b,
+            bytes(f"{self.repository_name}{self.branch}", "utf-8"),
+        )
+        return f"{concatenated[:RESOURCE_NAME_LENGTH_LIMIT - 2]}{checksum:02x}"
 
     def get_connection(self) -> pipelines.CodePipelineSource:
         return pipelines.CodePipelineSource.code_commit(
