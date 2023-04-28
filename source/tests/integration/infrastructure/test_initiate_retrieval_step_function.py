@@ -167,3 +167,24 @@ def test_state_machine_nested_distributed_map(default_input: str) -> None:
         raise AssertionError(
             "Initiate retrieval nested distributed map failed to run successfully."
         )
+
+
+def test_state_machine_dynamodb_write_metadata(default_input: str) -> None:
+    client: SFNClient = boto3.client("stepfunctions")
+    print("Starting execution")
+    response = client.start_execution(
+        stateMachineArn=os.environ[OutputKeys.INITIATE_RETRIEVAL_STATE_MACHINE_ARN],
+        input=default_input,
+    )
+    print("Execution started")
+
+    sf_history_output = client.get_execution_history(
+        executionArn=response["executionArn"], maxResults=1000
+    )
+    print(sf_history_output)
+
+    event_details = [
+        event["taskSucceededEventDetails"]
+        for event in sf_history_output["events"]
+        if "taskSucceededEventDetails" in event
+    ]

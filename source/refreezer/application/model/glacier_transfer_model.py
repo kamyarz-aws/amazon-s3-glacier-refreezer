@@ -9,12 +9,36 @@ logger = logging.getLogger()
 
 
 class GlacierTransferModel:
-    def __init__(self, run_id: str, glacier_object_id: str, part_number: int) -> None:
-        self.run_id = run_id
-        self.partion_key_name = "pk"
-        self.sort_key_name = "sk"
-        self.sort_key_meta = "meta"
-        self.glacier_object_id = glacier_object_id
-        self.part_number = part_number
-        self.partition_key = run_id + ":" + glacier_object_id
-        self.sort_key_part = f"p:{part_number:07d}"
+    def __init__(
+        self,
+        primary_key: str,
+        sort_key: str,
+        job_id: str,
+        start_timestamp: str,
+        archive_id: str,
+        vault_name: str,
+        retrieval_type: str,
+        archive_size: str,
+        description: str,
+        s3_bucket: str,
+        s3_key: str,
+    ) -> None:
+        self.primary_key = primary_key
+        self.sort_key = sort_key
+        self.job_id = job_id
+        self.start_timestamp = start_timestamp
+        self.archive_id = archive_id
+        self.valut_name = vault_name
+        self.retieval_type = retrieval_type
+        self.archive_size = archive_size
+        self.description = description
+        self.s3_bucket = s3_bucket
+        self.s3_key = s3_key
+
+    @property
+    def get_primary_key(self) -> str:
+        return self.primary_key
+
+    @property
+    def get_sort_key(self) -> str:
+        return self.sort_key

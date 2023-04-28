@@ -32,6 +32,7 @@ from refreezer.infrastructure.nested_distributed_map import NestedDistributedMap
 
 
 from refreezer.infrastructure.glue_helper.glue_sfn_update import GlueSfnUpdate
+from refreezer.application.model.glacier_transfer_model import GlacierTransferModel
 
 
 class OutputKeys:
@@ -1022,34 +1023,30 @@ class RefreezerStack(Stack):
                 mock_params.mock_glacier_archive_initiate_job_task
             )
 
-        dynamo_db_put_state_json = {
-            "Type": "Task",
-            "Parameters": {
-                "TableName": glacier_retrieval_table.table_name,
-                "Item": {
-                    "pk": {
-                        "S.$": "States.Format('IR:{}', $.ArchiveId)",
-                    },
-                    "sk": {
-                        "S": "meta",
-                    },
-                    "job_id": {
-                        "S.$": "$.JobId",
-                    },
-                    "start_timestamp": {
-                        "S.$": "$$.Execution.StartTime",
-                    },
-                },
-            },
-            "Resource": "arn:aws:states:::aws-sdk:dynamodb:putItem",
-        }
-
-        initiate_retrieval_dynamo_db_put = sfn.CustomState(
-            scope,
-            "InitiateRetrievalWorkflowDynamoDBPut",
-            state_json=dynamo_db_put_state_json,
+        glacier_transfer_model = GlacierTransferModel(
+            f"{'$.workflow_run_id'}:{'$.ArchiveId'}",
+            "meta",
+            "$.JobId",
+            "$$.Execution.StartTime",
+            "$.item.ArchiveId",
+            "$.VaultName",
+            "$.RetrievalType",
+            "$.item.ArchiveSizeInBytes",
+            "$.item.ArchiveDescription",
+            "$.S3Bucket",
+            "$.S3Key",
         )
-
+        initiate_retrieval_dynamo_db_put = tasks.DynamoPutItem(
+            self,
+            "InitiateRetrievalDynamoDBPutTask",
+            table=glacier_retrieval_table,
+            item={
+                k: tasks.DynamoAttributeValue.from_string(
+                    sfn.JsonPath.string_at(v) if v != "meta" else v
+                )
+                for k, v in glacier_transfer_model.__dict__.items()
+            },
+        )
         initiate_retrieval_definition = initiate_retrieval_initiate_job.next(
             initiate_retrieval_dynamo_db_put
         )
